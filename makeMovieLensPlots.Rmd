@@ -184,7 +184,7 @@ genderRatingPlot <- genderRatingPlot + theme(axis.text.x = element_text(angle = 
 genderRatingPlot <- genderRatingPlot + coord_flip()
 print(genderRatingPlot)
 ```
-Noir and Animation seem to be the highest rated surprisingly. The only gender differnce I notice is maybe the fact that women seem to like musical more than men. The only reason fantasy and war seem like they make a difference is that the sample size for both is quite small.
+Noir and Animation seem to be the highest rated surprisingly. Low sample sizes for some of these is a problem; the only reason fantasy and war seem like they make a difference in terms of gender is that the sample size for both is quite small. The only gender differnce I notice is maybe the fact that women seem to like musicals more than men.
 
 multiple genres:
 ```{r, fig.width=18}
@@ -201,8 +201,9 @@ print(genderRatingPlot)
 ```
 The low sample sizes seem to be fixed. Things I notice:
 
-* Horror movies do not get good ratings. It fits my expectations since horror movies tend to typically focused on cheap thrill but are not impactful.
+* Horror movies do not get good ratings. It fits my expectations since horror movies tend to typically focused on cheap thrills but are not typically impactful.
 * There are very few fantasy films and they tend to rank low. It could be that no one wants to take risks on making these types of movies because of this.
+*
 
 ## Investigate trends in profession with respect to movie genre preference
 
@@ -275,7 +276,7 @@ Note: Green tiles are missing data.
 
 Less missing data! Some of the same trends are there but everything appears smoothed out. It is harder to draw conclusions from this heatmap. I think I need some way of making repeated genre movies contribute proportionally rather than cumulatively.
 
-I wanted to cluster these heatmaps also but I couldn't figure it out in ggplot2. Any tips on clustering with ggplot?
+I wanted to cluster these heatmaps also but I couldn't figure it out in time.
 
 ### Acknowledgements:
 
