@@ -1,0 +1,25 @@
+MovieLens Exploritory Analysis
+========================================================
+Author: Justin Chu
+Purpose: The The code's purpose is two fold:
+
+  *To explore the MovieLen dataset for trends with movie preferences.
+  *To become better exploring data with R
+  *To demostrate an example statistical exploratory analysis project from raw data to figures.
+
+Note: cleanMovieLensData.R must be run before thie script to generate cleaned data that this script uses.
+
+```{r echo=FALSE}
+#load requried libraries and data
+library(ggplot2)
+library(plyr)
+mlDat <- read.csv("Results/unifiedMLData.csv")
+```
+
+
+
+### Acknowledgements:
+
+* Jenny Bryan and Song Cai - for their help, teaching, and providing good resources for learning R
+* Weicong Liao - for posting/altering the class to this dataset to being with
+* MovieLens.com - for posting there raw data publically for people to analyze
