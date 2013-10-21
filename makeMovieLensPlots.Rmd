@@ -51,6 +51,7 @@ mlDat_user <- ddply(mlDat, ~user_id + age + gender + occupation, summarize, mean
 agePlot <- ggplot(mlDat_user, aes(age)) + geom_histogram(aes(y=..density..), binwidth=1, colour="black", fill="white")
 agePlot <- agePlot + geom_density(alpha=.2, fill="#FF6666")
 print(agePlot)
+ggsave(filename = "agePlot.pdf")
 ```
 Users tend to be mostly in the late teens and mid thirties, though there seems to be another peak the occurs in the late forties.
 
@@ -63,6 +64,7 @@ datesPlot <- ggplot(mlDat_movie, aes(release_date)) + geom_histogram(aes(y=..den
 #alter axis
 datesPlot <- datesPlot + geom_density(alpha=.2, fill="#FF6666")
 print(datesPlot)
+ggsave(filename = "datesPlot.pdf")
 ```
 Most movies in the data tend to be from the 1990's. There is a pretty long tale meaning they have at least some moves from the past.
 
@@ -85,6 +87,8 @@ userPlot <- userPlot + ylab("number of users") + xlab("occupation")
 #flip axis to make professions easier to read
 userPlot <- userPlot + coord_flip()
 
+ggsave(filename = "userPlot.pdf")
+
 gender_dat <- ddply(mlDat_user, ~occupation, summarize, perc_male = (length(gender[gender == "M"])/length(gender)), counts = -length(user_id))
 
 #sorts by number of users
@@ -94,6 +98,8 @@ genderPlot <- genderPlot + theme(axis.text.x = element_text(angle = 90, hjust = 
 genderPlot <- genderPlot + ylab("percent male") + xlab("occupation")
 #flip axis to make professions easier to read
 genderPlot <- genderPlot + coord_flip()
+
+ggsave(filename = "genderPlot.pdf")
 
 agePlot <- ggplot(mlDat_user, aes(x=reorder(occupation,occupation,
                                             function(x)-length(x)), age)) + geom_violin()
@@ -112,6 +118,8 @@ agePlot <- agePlot + ylab("age") + xlab("occupation")
 #flip axis to make professions easier to read
 agePlot <- agePlot + coord_flip()
 
+ggsave(filename = "agePlot.pdf")
+
 #for plotting rating trends
 rankPlot <- ggplot(mlDat_user, aes(x=reorder(occupation,occupation,
                                             function(x)-length(x)), mean_rating)) + geom_violin()
@@ -121,6 +129,8 @@ rankPlot <- rankPlot + ylab("Average rating on Movies") + xlab("occupation")
 #flip axis to make professions easier to read
 rankPlot <- rankPlot + coord_flip()
 
+ggsave(filename = "rankPlot.pdf")
+
 #for printing figures adjacent to eachother
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 grid.newpage()
@@ -129,6 +139,7 @@ print(userPlot, vp = vplayout(1, 1))
 print(genderPlot, vp = vplayout(1, 2))
 print(agePlot, vp = vplayout(1, 3))
 print(rankPlot, vp = vplayout(1, 4))
+
 ```
 
 Observations:
@@ -150,6 +161,7 @@ genreCountPlot <- genreCountPlot + theme(axis.text.x = element_text(angle = 90, 
 genreCountPlot <- genreCountPlot + ylab("number of movies") + xlab("genre")
 genreCountPlot <- genreCountPlot + coord_flip()
 print(genreCountPlot)
+ggsave(filename = "genreCountPlot.pdf")
 ```
 A majority of the titles are multi genre. There really does not seem to be an even spread of titles, for example there are almost no pure fantasy titles.
 
@@ -164,6 +176,7 @@ genreCountPlot_multi <- genreCountPlot_multi + theme(axis.text.x = element_text(
 genreCountPlot_multi <- genreCountPlot_multi + ylab("number of movies") + xlab("genre")
 genreCountPlot_multi <- genreCountPlot_multi + coord_flip()
 print(genreCountPlot_multi)
+ggsave(filename = "genreCountPlot_multi.pdf")
 ```
 It is better to think of the number of movies as proportion rather than a total since some titles contribute multiple times to the count. It is worth noting that documentries no longer seem to be a high count genre (as opposed to the previous plot). This is of course because movies that are documentries typically do not have other genre associated with them.
 
@@ -183,8 +196,9 @@ genderRatingPlot <- genderRatingPlot + facet_wrap(~ gender)
 genderRatingPlot <- genderRatingPlot + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 genderRatingPlot <- genderRatingPlot + coord_flip()
 print(genderRatingPlot)
+ggsave(filename = "genderRatingPlot.pdf")
 ```
-Noir and Animation seem to be the highest rated surprisingly. The only gender differnce I notice is maybe the fact that women seem to like musical more than men. The only reason fantasy and war seem like they make a difference is that the sample size for both is quite small.
+Noir and Animation seem to be the highest rated surprisingly. Low sample sizes for some of these is a problem; the only reason fantasy and war seem like they make a difference in terms of gender is that the sample size for both is quite small. The only gender differnce I notice is maybe the fact that women seem to like musicals more than men.
 
 multiple genres:
 ```{r, fig.width=18}
@@ -198,11 +212,13 @@ genderRatingPlot <- genderRatingPlot + facet_wrap(~ gender)
 genderRatingPlot <- genderRatingPlot + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 genderRatingPlot <- genderRatingPlot + coord_flip()
 print(genderRatingPlot)
+ggsave(filename = "genderRatingPlot_multi.pdf")
 ```
 The low sample sizes seem to be fixed. Things I notice:
 
-* Horror movies do not get good ratings. It fits my expectations since horror movies tend to typically focused on cheap thrill but are not impactful.
+* Horror movies do not get good ratings. It fits my expectations since horror movies tend to typically focused on cheap thrills but are not typically impactful.
 * There are very few fantasy films and they tend to rank low. It could be that no one wants to take risks on making these types of movies because of this.
+*
 
 ## Investigate trends in profession with respect to movie genre preference
 
@@ -234,6 +250,7 @@ goHeat <- goHeat + theme(panel.background = element_rect(fill='darkgreen'),
                          panel.grid.major = element_blank(), 
                          panel.grid.minor = element_blank())
 print(goHeat)
+ggsave(filename = "genreOccupHeatMap.pdf")
 ```
 Note: Green tiles are missing data.
 
@@ -270,12 +287,13 @@ goHeat2 <- goHeat2 + theme(panel.background = element_rect(fill='darkgreen'),
                          panel.grid.major = element_blank(), 
                          panel.grid.minor = element_blank())
 print(goHeat2)
+ggsave(filename = "genreOccupHeatMap_multi.pdf")
 ```
 Note: Green tiles are missing data.
 
 Less missing data! Some of the same trends are there but everything appears smoothed out. It is harder to draw conclusions from this heatmap. I think I need some way of making repeated genre movies contribute proportionally rather than cumulatively.
 
-I wanted to cluster these heatmaps also but I couldn't figure it out in ggplot2. Any tips on clustering with ggplot?
+I wanted to cluster these heatmaps also but I couldn't figure it out in time.
 
 ### Acknowledgements:
 
