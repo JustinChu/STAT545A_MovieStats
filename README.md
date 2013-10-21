@@ -5,11 +5,7 @@ Exploratory analysis of Movie preference data set from http://grouplens.org/data
 
 Raw data is in the /ml-100k folder - see readme inside folder for details
 
-<<<<<<< HEAD
 Instructions: To generate html and plots run "make" in the main directory. Figures will be outputted to main directory upon running code
-=======
-Instructions: To generate html and plots run "make" in the main directory. A figures directory will be created with figure located inside.
->>>>>>> 83918fb2316b8be0b54db93c39de66c6ed98511d
 
 Scripts:
 
