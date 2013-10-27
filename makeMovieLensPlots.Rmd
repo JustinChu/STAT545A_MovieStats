@@ -293,7 +293,10 @@ Note: Green tiles are missing data.
 
 Less missing data! Some of the same trends are there but everything appears smoothed out. It is harder to draw conclusions from this heatmap. I think I need some way of making repeated genre movies contribute proportionally rather than cumulatively.
 
-I wanted to cluster these heatmaps also but I couldn't figure it out in time.
+### Testing out emdedding images
+
+Testing out emdedding of image. It seems to work, but formatting is not exactly the same.
+![last heatmap](figure/Heatmap2.png)
 
 ### Acknowledgements:
 
