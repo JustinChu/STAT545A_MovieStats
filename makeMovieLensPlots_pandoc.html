@@ -1,0 +1,336 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+</head>
+<body>
+<h1 id="movielens-dataset-exploratory-analysis">MovieLens Dataset Exploratory Analysis</h1>
+<p>Author: Justin Chu Purpose: The The code's purpose is three fold:</p>
+<p>*To explore the MovieLen dataset for trends with movie preferences. *To become better exploring data with R *To demonstrate an example statistical exploratory analysis project from raw data to report.</p>
+<p>Notes: cleanMovieLensData.R must be run before this script to generate cleaned data that this script uses. It will generate 2 files:</p>
+<ul>
+<li>unifiedMLData.csv - has one genre per movie, will put &quot;multiple&quot; for multi-genre films</li>
+<li>unifiedMLDataMulti.csv - has multiple genre per movie. This mean that there are duplicate &quot;user id&quot; &quot;movie name&quot; combinations.</li>
+</ul>
+<p>Start by loading libraries and data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># load requried libraries and data</span>
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(plyr)
+<span class="kw">library</span>(RColorBrewer)
+<span class="kw">library</span>(grid)
+
+<span class="co"># load single genre file</span>
+mlDat &lt;- <span class="kw">read.csv</span>(<span class="st">&quot;Results/unifiedMLData.csv&quot;</span>)
+<span class="co"># fix dates field</span>
+mlDat$release_date &lt;- <span class="kw">as.Date</span>(mlDat$release_date, <span class="st">&quot;%Y-%m-%d&quot;</span>)
+<span class="co"># sanity checking</span>
+<span class="kw">str</span>(mlDat)
+<span class="kw">summary</span>(mlDat)
+<span class="kw">head</span>(mlDat)
+<span class="kw">tail</span>(mlDat)
+
+<span class="co"># load multi genre file</span>
+mlDat_multi &lt;- <span class="kw">read.csv</span>(<span class="st">&quot;Results/unifiedMLDataMulti.csv&quot;</span>)
+<span class="co"># fix dates field</span>
+mlDat_multi$release_date &lt;- <span class="kw">as.Date</span>(mlDat_multi$release_date, <span class="st">&quot;%Y-%m-%d&quot;</span>)
+<span class="co"># sanity checking</span>
+<span class="kw">str</span>(mlDat_multi)
+<span class="kw">summary</span>(mlDat_multi)
+<span class="kw">head</span>(mlDat_multi)
+<span class="kw">tail</span>(mlDat_multi)</code></pre>
+<h2 id="investigate-general-dataset-features">Investigate general dataset features</h2>
+<p>Let see what the ages for the users are like in our data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># prepare table for analysis of users</span>
+mlDat_user &lt;- <span class="kw">ddply</span>(mlDat, ~user_id + age + gender + occupation, summarize, 
+    <span class="dt">mean_rating =</span> <span class="kw">mean</span>(rating))
+agePlot &lt;- <span class="kw">ggplot</span>(mlDat_user, <span class="kw">aes</span>(age)) + <span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">y =</span> ..density..), 
+    <span class="dt">binwidth =</span> <span class="dv">1</span>, <span class="dt">colour =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">fill =</span> <span class="st">&quot;white&quot;</span>)
+agePlot &lt;- agePlot + <span class="kw">geom_density</span>(<span class="dt">alpha =</span> <span class="fl">0.2</span>, <span class="dt">fill =</span> <span class="st">&quot;#FF6666&quot;</span>)
+<span class="kw">print</span>(agePlot)</code></pre>
+<div class="figure">
+<img src="figure/user.png" alt="plot of chunk user" /><p class="caption">plot of chunk user</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;agePlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<p>Users tend to be mostly in the late teens and mid thirties, though there seems to be another peak the occurs in the late forties.</p>
+<p>Let see what the release dates are like for the movies in our data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># prepare table for analysis of movies</span>
+mlDat_movie &lt;- <span class="kw">ddply</span>(mlDat, ~movie_title + release_date + genre, summarize, 
+    <span class="dt">mean_rating =</span> <span class="kw">mean</span>(rating))
+datesPlot &lt;- <span class="kw">ggplot</span>(mlDat_movie, <span class="kw">aes</span>(release_date)) + <span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">y =</span> ..density..), 
+    <span class="dt">binwidth =</span> <span class="dv">500</span>, <span class="dt">colour =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">fill =</span> <span class="st">&quot;white&quot;</span>)
+<span class="co"># alter axis</span>
+datesPlot &lt;- datesPlot + <span class="kw">geom_density</span>(<span class="dt">alpha =</span> <span class="fl">0.2</span>, <span class="dt">fill =</span> <span class="st">&quot;#FF6666&quot;</span>)
+<span class="kw">print</span>(datesPlot)</code></pre>
+<pre><code>## Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<div class="figure">
+<img src="figure/release.png" alt="plot of chunk release" /><p class="caption">plot of chunk release</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;datesPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<pre><code>## Warning: Removed 1 rows containing non-finite values (stat_density).</code></pre>
+<p>Most movies in the data tend to be from the 1990's. There is a pretty long tale meaning they have at least some moves from the past.</p>
+<h2 id="investigate-the-users-with-respect-to-profession-that-contributed-to-the-dataset">Investigate the users with respect to profession that contributed to the dataset</h2>
+<p>Lets get a feel of the dataset with respect to the profession within the dataset. Lets look at:</p>
+<ul>
+<li>Total numbers of each profession that contributed to the dataset</li>
+<li>Gender bias in each profession</li>
+<li>How old each profession tends to be</li>
+<li>How the professions tend to rank movies</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sorts by number of users</span>
+userPlot &lt;- <span class="kw">ggplot</span>(mlDat_user, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(occupation, occupation, function(x) -<span class="kw">length</span>(x)), 
+    <span class="dt">fill =</span> gender)) + <span class="kw">geom_bar</span>()
+<span class="co"># fix axis</span>
+userPlot &lt;- userPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+userPlot &lt;- userPlot + <span class="kw">ylab</span>(<span class="st">&quot;number of users&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;occupation&quot;</span>)
+<span class="co"># flip axis to make professions easier to read</span>
+userPlot &lt;- userPlot + <span class="kw">coord_flip</span>()
+
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;userPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">
+gender_dat &lt;- <span class="kw">ddply</span>(mlDat_user, ~occupation, summarize, <span class="dt">perc_male =</span> (<span class="kw">length</span>(gender[gender == 
+    <span class="st">&quot;M&quot;</span>])/<span class="kw">length</span>(gender)), <span class="dt">counts =</span> -<span class="kw">length</span>(user_id))
+
+<span class="co"># sorts by number of users</span>
+genderPlot &lt;- <span class="kw">ggplot</span>(gender_dat, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(occupation, counts), perc_male)) + 
+    <span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>)
+<span class="co"># fix axis</span>
+genderPlot &lt;- genderPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+genderPlot &lt;- genderPlot + <span class="kw">ylab</span>(<span class="st">&quot;percent male&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;occupation&quot;</span>)
+<span class="co"># flip axis to make professions easier to read</span>
+genderPlot &lt;- genderPlot + <span class="kw">coord_flip</span>()
+
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genderPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">
+agePlot &lt;- <span class="kw">ggplot</span>(mlDat_user, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(occupation, occupation, function(x) -<span class="kw">length</span>(x)), 
+    age)) + <span class="kw">geom_violin</span>()
+<span class="co"># fix axis</span>
+agePlot &lt;- agePlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+agePlot &lt;- agePlot + <span class="kw">ylab</span>(<span class="st">&quot;age&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;occupation&quot;</span>)
+<span class="co"># flip axis to make professions easier to read</span>
+agePlot &lt;- agePlot + <span class="kw">coord_flip</span>()
+
+<span class="co"># for plotting for age information</span>
+agePlot &lt;- <span class="kw">ggplot</span>(mlDat_user, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(occupation, occupation, function(x) -<span class="kw">length</span>(x)), 
+    age)) + <span class="kw">geom_violin</span>()
+<span class="co"># fix axis</span>
+agePlot &lt;- agePlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+agePlot &lt;- agePlot + <span class="kw">ylab</span>(<span class="st">&quot;age&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;occupation&quot;</span>)
+<span class="co"># flip axis to make professions easier to read</span>
+agePlot &lt;- agePlot + <span class="kw">coord_flip</span>()
+
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;agePlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># for plotting rating trends</span>
+rankPlot &lt;- <span class="kw">ggplot</span>(mlDat_user, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(occupation, occupation, function(x) -<span class="kw">length</span>(x)), 
+    mean_rating)) + <span class="kw">geom_violin</span>()
+<span class="co"># fix axis</span>
+rankPlot &lt;- rankPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+rankPlot &lt;- rankPlot + <span class="kw">ylab</span>(<span class="st">&quot;Average rating on Movies&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;occupation&quot;</span>)
+<span class="co"># flip axis to make professions easier to read</span>
+rankPlot &lt;- rankPlot + <span class="kw">coord_flip</span>()
+
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;rankPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># for printing figures adjacent to eachother</span>
+vplayout &lt;- function(x, y) <span class="kw">viewport</span>(<span class="dt">layout.pos.row =</span> x, <span class="dt">layout.pos.col =</span> y)
+<span class="kw">grid.newpage</span>()
+<span class="kw">pushViewport</span>(<span class="kw">viewport</span>(<span class="dt">layout =</span> <span class="kw">grid.layout</span>(<span class="dv">1</span>, <span class="dv">4</span>)))
+<span class="kw">print</span>(userPlot, <span class="dt">vp =</span> <span class="kw">vplayout</span>(<span class="dv">1</span>, <span class="dv">1</span>))
+<span class="kw">print</span>(genderPlot, <span class="dt">vp =</span> <span class="kw">vplayout</span>(<span class="dv">1</span>, <span class="dv">2</span>))
+<span class="kw">print</span>(agePlot, <span class="dt">vp =</span> <span class="kw">vplayout</span>(<span class="dv">1</span>, <span class="dv">3</span>))
+<span class="kw">print</span>(rankPlot, <span class="dt">vp =</span> <span class="kw">vplayout</span>(<span class="dv">1</span>, <span class="dv">4</span>))</code></pre>
+<div class="figure">
+<img src="figure/Professions.png" alt="plot of chunk Professions" /><p class="caption">plot of chunk Professions</p>
+</div>
+<p>Observations:</p>
+<ul>
+<li>There are very few doctors and homemakers, we probably can't say anything about these groups with very much confidence</li>
+<li>Students have a very low average age in contrast to the retired. Although these stand out the most, the rest have some divergence; for example average programmer is younger then the average healthcare worker.</li>
+<li>Males make up of more of our sample. Some professions like engineering (rather unsurprisingly) are completely male dominated.</li>
+<li>The professions do not rank things evenly. Some appear more picky; for example executives seem to sometime rank movies very low and healthcare workers seem to have a very low average rating.</li>
+</ul>
+<h2 id="investigate-the-movies-with-respect-to-users-in-the-dataset">Investigate the movies with respect to users in the dataset</h2>
+<h4 id="total-number-of-movies-with-a-specific-genre-counted-single-times">Total number of movies with a specific genre counted single times:</h4>
+<pre class="sourceCode r"><code class="sourceCode r">genreCountPlot &lt;- <span class="kw">ggplot</span>(mlDat_movie, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(genre, genre, function(x) -<span class="kw">length</span>(x)))) + 
+    <span class="kw">geom_bar</span>()
+<span class="co"># fix axis</span>
+genreCountPlot &lt;- genreCountPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+genreCountPlot &lt;- genreCountPlot + <span class="kw">ylab</span>(<span class="st">&quot;number of movies&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;genre&quot;</span>)
+genreCountPlot &lt;- genreCountPlot + <span class="kw">coord_flip</span>()
+<span class="kw">print</span>(genreCountPlot)</code></pre>
+<div class="figure">
+<img src="figure/unnamed-chunk-1.png" alt="plot of chunk unnamed-chunk-1" /><p class="caption">plot of chunk unnamed-chunk-1</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genreCountPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<p>A majority of the titles are multi genre. There really does not seem to be an even spread of titles, for example there are almost no pure fantasy titles.</p>
+<h4 id="total-number-of-movies-with-a-specific-genre-counted-multiple-times-for-multi-genre-movies">Total number of movies with a specific genre counted multiple times for multi genre movies:</h4>
+<pre class="sourceCode r"><code class="sourceCode r">mlDat_movie_multi &lt;- <span class="kw">ddply</span>(mlDat_multi, ~movie_title + release_date + genre, 
+    summarize, <span class="dt">mean_rating =</span> <span class="kw">mean</span>(rating))
+
+genreCountPlot_multi &lt;- <span class="kw">ggplot</span>(mlDat_movie_multi, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(genre, genre, 
+    function(x) -<span class="kw">length</span>(x)))) + <span class="kw">geom_bar</span>()
+<span class="co"># fix axis</span>
+genreCountPlot_multi &lt;- genreCountPlot_multi + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+genreCountPlot_multi &lt;- genreCountPlot_multi + <span class="kw">ylab</span>(<span class="st">&quot;number of movies&quot;</span>) + <span class="kw">xlab</span>(<span class="st">&quot;genre&quot;</span>)
+genreCountPlot_multi &lt;- genreCountPlot_multi + <span class="kw">coord_flip</span>()
+<span class="kw">print</span>(genreCountPlot_multi)</code></pre>
+<div class="figure">
+<img src="figure/unnamed-chunk-2.png" alt="plot of chunk unnamed-chunk-2" /><p class="caption">plot of chunk unnamed-chunk-2</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genreCountPlot_multi.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<p>It is better to think of the number of movies as proportion rather than a total since some titles contribute multiple times to the count. It is worth noting that documentries no longer seem to be a high count genre (as opposed to the previous plot). This is of course because movies that are documentries typically do not have other genre associated with them.</p>
+<h2 id="investigate-the-trends-in-movies-with-respect-to-rating-and-other-factors-within-the-dataset">Investigate the trends in movies with respect to rating and other factors within the dataset</h2>
+<h4 id="does-genre-affect-the-rating-of-a-movie-does-genre-matter-to-the-average-male-or-female">Does genre affect the rating of a movie? Does genre matter to the average male or female?</h4>
+<p>Pure genres:</p>
+<pre class="sourceCode r"><code class="sourceCode r">mlDat_avgRating &lt;- <span class="kw">ddply</span>(mlDat, ~genre, summarize, <span class="dt">gender =</span> <span class="st">&quot;Both&quot;</span>, <span class="dt">rating =</span> <span class="kw">mean</span>(rating))
+mlDat_gender &lt;- <span class="kw">ddply</span>(mlDat, ~genre + gender, summarize, <span class="dt">rating =</span> <span class="kw">mean</span>(rating))
+mlDat_gender &lt;- <span class="kw">rbind</span>(mlDat_gender, mlDat_avgRating)
+
+genderRatingPlot &lt;- <span class="kw">ggplot</span>(mlDat_gender, <span class="kw">aes</span>(genre, rating)) + <span class="kw">geom_histogram</span>(<span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>)
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">facet_wrap</span>(~gender)
+<span class="co"># fix axis</span>
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">coord_flip</span>()
+<span class="kw">print</span>(genderRatingPlot)</code></pre>
+<div class="figure">
+<img src="figure/unnamed-chunk-3.png" alt="plot of chunk unnamed-chunk-3" /><p class="caption">plot of chunk unnamed-chunk-3</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genderRatingPlot.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<p>Noir and Animation seem to be the highest rated surprisingly. Low sample sizes for some of these is a problem; the only reason fantasy and war seem like they make a difference in terms of gender is that the sample size for both is quite small. The only gender differnce I notice is maybe the fact that women seem to like musicals more than men.</p>
+<p>multiple genres:</p>
+<pre class="sourceCode r"><code class="sourceCode r">mlDat_avgRating &lt;- <span class="kw">ddply</span>(mlDat_multi, ~genre, summarize, <span class="dt">gender =</span> <span class="st">&quot;Both&quot;</span>, <span class="dt">rating =</span> <span class="kw">mean</span>(rating))
+mlDat_gender &lt;- <span class="kw">ddply</span>(mlDat_multi, ~genre + gender, summarize, <span class="dt">rating =</span> <span class="kw">mean</span>(rating))
+mlDat_gender &lt;- <span class="kw">rbind</span>(mlDat_gender, mlDat_avgRating)
+
+genderRatingPlot &lt;- <span class="kw">ggplot</span>(mlDat_gender, <span class="kw">aes</span>(genre, rating)) + <span class="kw">geom_histogram</span>(<span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>)
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">facet_wrap</span>(~gender)
+<span class="co"># fix axis</span>
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+genderRatingPlot &lt;- genderRatingPlot + <span class="kw">coord_flip</span>()
+<span class="kw">print</span>(genderRatingPlot)</code></pre>
+<div class="figure">
+<img src="figure/unnamed-chunk-4.png" alt="plot of chunk unnamed-chunk-4" /><p class="caption">plot of chunk unnamed-chunk-4</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genderRatingPlot_multi.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 18 x 7 in image</code></pre>
+<p>The low sample sizes seem to be fixed. Things I notice:</p>
+<ul>
+<li>Horror movies do not get good ratings. It fits my expectations since horror movies tend to typically focused on cheap thrills but are not typically impactful.</li>
+<li>There are very few fantasy films and they tend to rank low. It could be that no one wants to take risks on making these types of movies because of this. *</li>
+</ul>
+<h2 id="investigate-trends-in-profession-with-respect-to-movie-genre-preference">Investigate trends in profession with respect to movie genre preference</h2>
+<p>Below is a code to generate heatmap with genre and profession as the x and y axes. For simplicity I used the genre column I created in my previous script that merged multiple genres into the variable &quot;multiple&quot;). I removed elements that did not have very observations (based on figure above).</p>
+<p>This is my first pass attempt:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># prepare data for heatmap</span>
+mlDat_genre_occup &lt;- <span class="kw">ddply</span>(mlDat, ~genre + occupation, summarize, <span class="dt">mean_rating =</span> <span class="kw">mean</span>(rating))
+
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, occupation != <span class="st">&quot;homemaker&quot;</span>))
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, genre != <span class="st">&quot;unknown&quot;</span>))
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, genre != <span class="st">&quot;Fantasy&quot;</span>))
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, occupation != <span class="st">&quot;none&quot;</span>))
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, genre != <span class="st">&quot;War&quot;</span>))
+mlDat_genre_occup &lt;- <span class="kw">droplevels</span>(<span class="kw">subset</span>(mlDat_genre_occup, occupation != <span class="st">&quot;doctor&quot;</span>))
+
+<span class="co"># choose divergent colour tones to try and make distintions between like and</span>
+<span class="co"># dislike</span>
+heatMapPalette &lt;- <span class="kw">colorRampPalette</span>(<span class="kw">rev</span>(<span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="st">&quot;RdBu&quot;</span>)))
+
+<span class="co"># get data ready for heatmap</span>
+goHeat &lt;- <span class="kw">ggplot</span>(mlDat_genre_occup, <span class="kw">aes</span>(<span class="dt">x =</span> genre, <span class="dt">y =</span> occupation, <span class="dt">fill =</span> mean_rating))
+<span class="co"># rotate labels</span>
+goHeat &lt;- goHeat + <span class="kw">geom_tile</span>() + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+<span class="co"># add colours</span>
+goHeat &lt;- goHeat + <span class="kw">scale_fill_gradientn</span>(<span class="dt">colours =</span> <span class="kw">heatMapPalette</span>(<span class="dv">100</span>))
+<span class="co"># change background</span>
+goHeat &lt;- goHeat + <span class="kw">theme</span>(<span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;darkgreen&quot;</span>), 
+    <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(), <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>())
+<span class="kw">print</span>(goHeat)</code></pre>
+<div class="figure">
+<img src="figure/Heatmap1.png" alt="plot of chunk Heatmap1" /><p class="caption">plot of chunk Heatmap1</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genreOccupHeatMap.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<p>Note: Green tiles are missing data.</p>
+<p>So now I'm noticing some other interesting trends:</p>
+<ul>
+<li>The retired (and likely elderly) do not like pure crime movies. Maybe they prefer not to think about what crimes could happen.</li>
+<li>People who work in healthcare (not doctors) have extremely high standards.</li>
+<li>Executives tend to dislike many movie genres but still like noir films.</li>
+<li>Lawyers like noir and romance films.</li>
+<li>Many more - do you see anything interesting?</li>
+</ul>
+<p>Caveats: I can't say how confident I am about these trends. Some professions are underrepresented (for instance there are only 7 doctors in this dataset who also happen to be male). Also, Pooling together multiple genre movies greatly reduced possible the sample sizes for genres. Finally, the division point (white colour) is placed on roughly a rating of 3 but people tend to rank movies more than 3 on average.</p>
+<h4 id="my-attempt-to-remedy-problems-with-previous-heatmap">My attempt to remedy problems with previous heatmap:</h4>
+<p>Below is a code to generate heatmap with genre and profession as the x and y axes. I used all movies in analysis including multiple genre films (they will count towards more than on category).</p>
+<p>This is my second attempt pass attempt:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># prepare data for heatmap</span>
+mlDat_genre_occup &lt;- <span class="kw">ddply</span>(mlDat_multi, ~genre + occupation, summarize, <span class="dt">mean_rating =</span> <span class="kw">mean</span>(rating))
+
+<span class="co"># choose divergent colour tones to try and make distintions between like and</span>
+<span class="co"># dislike</span>
+heatMapPalette &lt;- <span class="kw">colorRampPalette</span>(<span class="kw">rev</span>(<span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="st">&quot;RdBu&quot;</span>)))
+
+<span class="co"># get data ready for heatmap</span>
+goHeat2 &lt;- <span class="kw">ggplot</span>(mlDat_genre_occup, <span class="kw">aes</span>(<span class="dt">x =</span> genre, <span class="dt">y =</span> occupation, <span class="dt">fill =</span> mean_rating))
+<span class="co"># rotate labels</span>
+goHeat2 &lt;- goHeat2 + <span class="kw">geom_tile</span>() + <span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, 
+    <span class="dt">hjust =</span> <span class="dv">1</span>))
+<span class="co"># add colours</span>
+goHeat2 &lt;- goHeat2 + <span class="kw">scale_fill_gradientn</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="fl">2.5</span>, <span class="fl">4.6</span>), <span class="dt">colours =</span> <span class="kw">heatMapPalette</span>(<span class="dv">100</span>))
+<span class="co"># change background</span>
+goHeat2 &lt;- goHeat2 + <span class="kw">theme</span>(<span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;darkgreen&quot;</span>), 
+    <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(), <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>())
+<span class="kw">print</span>(goHeat2)</code></pre>
+<div class="figure">
+<img src="figure/Heatmap2.png" alt="plot of chunk Heatmap2" /><p class="caption">plot of chunk Heatmap2</p>
+</div>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="st">&quot;genreOccupHeatMap_multi.pdf&quot;</span>)</code></pre>
+<pre><code>## Saving 7 x 7 in image</code></pre>
+<p>Note: Green tiles are missing data.</p>
+<p>Less missing data! Some of the same trends are there but everything appears smoothed out. It is harder to draw conclusions from this heatmap. I think I need some way of making repeated genre movies contribute proportionally rather than cumulatively.</p>
+<h3 id="testing-out-emdedding-images">Testing out emdedding images</h3>
+<p>Testing out emdedding of image. It seems to work, but formatting is not exactly the same. <img src="figure/Heatmap2.png" alt="last heatmap" /></p>
+<h3 id="acknowledgements">Acknowledgements:</h3>
+<ul>
+<li>Jenny Bryan and Song Cai - for their help, teaching, and providing good resources for learning R</li>
+<li>Weicong Liao - for posting/alerting the class to this dataset to begin with</li>
+<li>grouplens.org/datasets/movielens/ - for posting there raw data publically for people to analyze</li>
+</ul>
+</body>
+</html>

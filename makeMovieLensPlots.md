@@ -437,7 +437,7 @@ Less missing data! Some of the same trends are there but everything appears smoo
 
 ### Testing out emdedding images
 
-Testing out emdedding of image:
+Testing out emdedding of image. It seems to work, but formatting is not exactly the same.
 ![last heatmap](figure/Heatmap2.png)
 
 ### Acknowledgements:

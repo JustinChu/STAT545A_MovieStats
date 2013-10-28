@@ -7,6 +7,12 @@ Raw data is in the /ml-100k folder - see readme inside folder for details
 
 Instructions: To generate html and plots run "make" in the main directory. Figures will be outputted to main directory upon running code
 
+Changes made October 27th:
+ 
+* added example of image embedding
+* added pandoc usage - makefile now creates pandoc generated html (makeMovieLensPlots_pandoc.html)
+* added pandoc usage - makefile now creates PDF using pandoc + latex (makeMovieLensPlots.pdf)
+
 Scripts:
 
 * cleanMovieLensData.R - Cleans and unifies dataset into something that I can easily manipulate and explore. Outputs unifiedMLData.csv and unifiedMLDataMulti.csv in Results folder.
