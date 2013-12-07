@@ -3,9 +3,9 @@ MovieLens Dataset Exploratory Analysis
 Author: Justin Chu
 Purpose: The The code's purpose is three fold:
 
-  *To explore the MovieLen dataset for trends with movie preferences.
-  *To become better exploring data with R
-  *To demonstrate an example statistical exploratory analysis project from raw data to report.
+  * To explore the MovieLen dataset for trends with movie preferences.
+  * To become better exploring data with R
+  * To demonstrate an example statistical exploratory analysis project from raw data to report.
 
 Notes: cleanMovieLensData.R must be run before this script to generate cleaned data that this script uses. It will generate 2 files:
 
