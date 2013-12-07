@@ -3,7 +3,7 @@
 all: makeMovieLensPlots_pandoc.html makeMovieLensPlots.html makeMovieLensPlots.pdf Results/unifiedMLDataMulti.csv Results/unifiedMLData.csv
 
 makeMovieLensPlots_pandoc.html: makeMovieLensPlots.md
-pandoc -s makeMovieLensPlots.md -o makeMovieLensPlots_pandoc.html
+	pandoc -s makeMovieLensPlots.md -o makeMovieLensPlots_pandoc.html
 
 makeMovieLensPlots.pdf: makeMovieLensPlots.md
 	pandoc -s makeMovieLensPlots.md -o makeMovieLensPlots.pdf;

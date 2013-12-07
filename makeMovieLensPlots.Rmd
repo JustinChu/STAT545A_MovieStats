@@ -3,9 +3,9 @@ MovieLens Dataset Exploratory Analysis
 Author: Justin Chu
 Purpose: The The code's purpose is three fold:
 
-  *To explore the MovieLen dataset for trends with movie preferences.
-  *To become better exploring data with R
-  *To demonstrate an example statistical exploratory analysis project from raw data to report.
+  * To explore the MovieLen dataset for trends with movie preferences.
+  * To become better exploring data with R
+  * To demonstrate an example statistical exploratory analysis project from raw data to report.
 
 Notes: cleanMovieLensData.R must be run before this script to generate cleaned data that this script uses. It will generate 2 files:
 
@@ -66,7 +66,7 @@ datesPlot <- datesPlot + geom_density(alpha=.2, fill="#FF6666")
 print(datesPlot)
 ggsave(filename = "datesPlot.pdf")
 ```
-Most movies in the data tend to be from the 1990's. There is a pretty long tale meaning they have at least some moves from the past.
+Most movies in the data tend to be from the 1990's. There is a pretty long tail meaning they have at least some moves from the past.
 
 ## Investigate the users with respect to profession that contributed to the dataset
 
@@ -178,7 +178,7 @@ genreCountPlot_multi <- genreCountPlot_multi + coord_flip()
 print(genreCountPlot_multi)
 ggsave(filename = "genreCountPlot_multi.pdf")
 ```
-It is better to think of the number of movies as proportion rather than a total since some titles contribute multiple times to the count. It is worth noting that documentries no longer seem to be a high count genre (as opposed to the previous plot). This is of course because movies that are documentries typically do not have other genre associated with them.
+It is better to think of the number of movies as proportion rather than a total since some titles contribute multiple times to the count. It is worth noting that documentaries no longer seem to be a high count genre (as opposed to the previous plot). This is of course because movies that are documentaries typically do not have other genre associated with them.
 
 ## Investigate the trends in movies with respect to rating and other factors within the dataset
 
@@ -198,7 +198,7 @@ genderRatingPlot <- genderRatingPlot + coord_flip()
 print(genderRatingPlot)
 ggsave(filename = "genderRatingPlot.pdf")
 ```
-Noir and Animation seem to be the highest rated surprisingly. Low sample sizes for some of these is a problem; the only reason fantasy and war seem like they make a difference in terms of gender is that the sample size for both is quite small. The only gender differnce I notice is maybe the fact that women seem to like musicals more than men.
+Noir and Animation seem to be the highest rated surprisingly. Low sample sizes for some of these is a problem; the only reason fantasy and war seem like they make a difference in terms of gender is that the sample size for both is quite small. The only gender difference I notice is maybe the fact that women seem to like musicals more than men.
 
 multiple genres:
 ```{r, fig.width=18}
@@ -222,7 +222,7 @@ The low sample sizes seem to be fixed. Things I notice:
 
 ## Investigate trends in profession with respect to movie genre preference
 
-Below is a code to generate heatmap with genre and profession as the x and y axes. For simplicity I used the genre column I created in my previous script that merged multiple genres into the variable "multiple"). I removed elements that did not have very observations (based on figure above).
+Below is a code to generate heatmap with genre and profession as the x and y axes. For simplicity I used the genre column I created in my previous script that merged multiple genres into the variable "multiple"). I removed elements that did not have very many observations (based on figure above).
 
 This is my first pass attempt:
 ```{r Heatmap1}
@@ -293,13 +293,13 @@ Note: Green tiles are missing data.
 
 Less missing data! Some of the same trends are there but everything appears smoothed out. It is harder to draw conclusions from this heatmap. I think I need some way of making repeated genre movies contribute proportionally rather than cumulatively.
 
-### Testing out emdedding images
+### Testing out embedding images
 
-Testing out emdedding of image. It seems to work, but formatting is not exactly the same.
+Testing out embedding of image. It seems to work, but formatting is not exactly the same.
 ![last heatmap](figure/Heatmap2.png)
 
 ### Acknowledgements:
 
 * Jenny Bryan and Song Cai - for their help, teaching, and providing good resources for learning R
 * Weicong Liao - for posting/alerting the class to this dataset to begin with
-* grouplens.org/datasets/movielens/ - for posting there raw data publically for people to analyze
+* grouplens.org/datasets/movielens/ - for posting there raw data publicly for people to analyze
